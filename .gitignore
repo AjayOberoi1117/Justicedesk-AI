@@ -11,3 +11,7 @@ venv/
 # Scout output data
 data/scout/
 *.jsonl
+
+# Runtime progress files
+*_progress.json
+sc_recent_progress.json

@@ -29,10 +29,18 @@ if not GEMINI_KEY:
     print("❌ GEMINI_API_KEY not found in .env"); sys.exit(1)
 
 DB_CONFIG = {
-    "dbname": "postgres", "user": "postgres",
-    "password": "Monty@1117", "host": "8.231.89.59",
-    "port": "5432", "sslmode": "require"
+    "dbname": os.getenv("DB_NAME", "postgres"),
+    "user": os.getenv("DB_USER", "postgres"),
+    "password": os.getenv("DB_PASSWORD"),
+    "host": os.getenv("DB_HOST"),
+    "port": os.getenv("DB_PORT", "5432"),
+    "sslmode": os.getenv("DB_SSLMODE", "require"),
 }
+
+missing_db_vars = [k for k in ("DB_PASSWORD", "DB_HOST") if not os.getenv(k)]
+if missing_db_vars:
+    print(f"❌ Missing database environment variables in .env: {', '.join(missing_db_vars)}")
+    sys.exit(1)
 
 # ── Search strategy: 200+ queries × 10 pages × ~8 docs = ~16,000+ unique ──────
 # Year sweeps cover bulk volume; topic searches cover depth.

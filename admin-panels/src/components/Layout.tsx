@@ -2,12 +2,13 @@ import { Outlet, useNavigate } from 'react-router-dom'
 import { useAppStore } from '../store'
 import { LogOut, Menu, X } from 'lucide-react'
 import { useState } from 'react'
+import AdminIcon, { getProductConfig } from './AdminIcon'
 
-const ProductInfo: Record<string, { name: string; color: string; description: string }> = {
-  current: { name: 'CURRENT', color: 'bg-blue-600', description: 'News Platform' },
-  'justice-desk': { name: 'Justice Desk', color: 'bg-red-600', description: 'Legal Services' },
-  'vakeel-sahib': { name: 'Vakeel Sahib', color: 'bg-purple-600', description: 'Advocate Network' },
-  medideals: { name: 'MediDeals', color: 'bg-green-600', description: 'Pharma Marketplace' },
+const ProductInfo: Record<string, { name: string; color: string; bgColor: string; description: string; hexColor: string }> = {
+  current: { name: 'CURRENT', color: 'bg-orange-600', bgColor: '#FEF3E2', hexColor: '#EA8B15', description: 'News Platform' },
+  'justice-desk': { name: 'Justice Desk', color: 'bg-indigo-600', bgColor: '#EFF0F8', hexColor: '#4F3AFF', description: 'Legal Services' },
+  'vakeel-sahib': { name: 'Vakeel Sahib', color: 'bg-violet-600', bgColor: '#F0E5FF', hexColor: '#7C3AED', description: 'Advocate Network' },
+  medideals: { name: 'MediDeals', color: 'bg-green-600', bgColor: '#E3F2E0', hexColor: '#14A04E', description: 'Pharma Marketplace' },
 }
 
 export default function Layout() {
@@ -38,8 +39,11 @@ export default function Layout() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-3">
-              <div className="text-2xl font-bold">{product.name}</div>
-              <div className="text-sm opacity-90">{product.description}</div>
+              <AdminIcon product={productMode as 'current' | 'justice-desk' | 'vakeel-sahib' | 'medideals'} size={28} />
+              <div>
+                <div className="text-2xl font-bold">{product.name}</div>
+                <div className="text-sm opacity-90">{product.description}</div>
+              </div>
             </div>
             <div className="hidden md:flex items-center gap-4">
               <div className="text-sm">

@@ -1,0 +1,18 @@
+{
+  "name": "admin-backend",
+  "version": "1.0.0",
+  "description": "Backend services for unified admin panels",
+  "main": "index.js",
+  "scripts": {
+    "install-all": "npm install && cd services/current && npm install && cd ../justice-desk && npm install && cd ../vakeel-sahib && npm install && cd ../medideals && npm install",
+    "start-current": "cd services/current && npm start",
+    "start-jd": "cd services/justice-desk && npm start",
+    "start-vs": "cd services/vakeel-sahib && npm start",
+    "start-md": "cd services/medideals && npm start",
+    "start-all": "concurrently \"npm run start-current\" \"npm run start-jd\" \"npm run start-vs\" \"npm run start-md\"",
+    "dev": "npm install && npm run start-all"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0"
+  }
+}

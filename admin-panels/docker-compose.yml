@@ -1,0 +1,79 @@
+version: '3.8'
+
+services:
+  current:
+    build:
+      context: ./backend/services/current
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/current/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  justice-desk:
+    build:
+      context: ./backend/services/justice-desk
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    environment:
+      - PORT=3001
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/api/justice-desk/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  vakeel-sahib:
+    build:
+      context: ./backend/services/vakeel-sahib
+      dockerfile: Dockerfile
+    ports:
+      - "3002:3002"
+    environment:
+      - PORT=3002
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3002/api/vakeel-sahib/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  medideals:
+    build:
+      context: ./backend/services/medideals
+      dockerfile: Dockerfile
+    ports:
+      - "3003:3003"
+    environment:
+      - PORT=3003
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3003/api/medideals/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  admin-frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "4173:4173"
+    depends_on:
+      current:
+        condition: service_healthy
+      justice-desk:
+        condition: service_healthy
+      vakeel-sahib:
+        condition: service_healthy
+      medideals:
+        condition: service_healthy
+    environment:
+      - REACT_APP_CURRENT_API_URL=http://current:3000/api
+      - REACT_APP_JD_API_URL=http://justice-desk:3001/api
+      - REACT_APP_VS_API_URL=http://vakeel-sahib:3002/api
+      - REACT_APP_MD_API_URL=http://medideals:3003/api

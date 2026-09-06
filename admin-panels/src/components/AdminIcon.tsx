@@ -1,10 +1,4 @@
 import React from 'react'
-import {
-  Newspaper,
-  Scale,
-  Users,
-  Package,
-} from 'lucide-react'
 
 interface AdminIconProps {
   product: 'current' | 'justice-desk' | 'vakeel-sahib' | 'medideals'
@@ -14,28 +8,28 @@ interface AdminIconProps {
 
 const PRODUCT_ICONS = {
   current: {
-    icon: Newspaper,
+    iconPath: '/icons/current-icon.png',
     name: 'CURRENT',
     subtitle: 'News Platform',
     color: '#EA8B15',
     bgColor: '#FEF3E2',
   },
   'justice-desk': {
-    icon: Scale,
+    iconPath: '/icons/justice-desk-icon.png',
     name: 'Justice Desk',
     subtitle: 'Legal Services',
     color: '#4F3AFF',
     bgColor: '#EFF0F8',
   },
   'vakeel-sahib': {
-    icon: Users,
+    iconPath: '/icons/vakeel-sahib-icon.png',
     name: 'Vakeel Sahib',
     subtitle: 'Advocate Network',
     color: '#7C3AED',
     bgColor: '#F0E5FF',
   },
   medideals: {
-    icon: Package,
+    iconPath: '/icons/medideals-icon.png',
     name: 'MediDeals',
     subtitle: 'B2B Pharmacy',
     color: '#14A04E',
@@ -49,14 +43,15 @@ export default function AdminIcon({
   className = '',
 }: AdminIconProps) {
   const config = PRODUCT_ICONS[product]
-  const Icon = config.icon
 
   return (
-    <Icon
-      size={size}
-      color={config.color}
-      className={className}
-      strokeWidth={1.5}
+    <img
+      src={config.iconPath}
+      alt={config.name}
+      width={size}
+      height={size}
+      className={`rounded-md object-cover ${className}`}
+      style={{ aspectRatio: '1 / 1' }}
     />
   )
 }
@@ -69,7 +64,6 @@ export function AdminIconWithBg({
   size?: number
 }) {
   const config = PRODUCT_ICONS[product]
-  const Icon = config.icon
   const wrapperSize = size + 20
 
   return (
@@ -82,9 +76,16 @@ export function AdminIconWithBg({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
+        overflow: 'hidden',
       }}
     >
-      <Icon size={size} color={config.color} strokeWidth={1.5} />
+      <img
+        src={config.iconPath}
+        alt={config.name}
+        width={size}
+        height={size}
+        style={{ aspectRatio: '1 / 1', objectFit: 'cover' }}
+      />
     </div>
   )
 }

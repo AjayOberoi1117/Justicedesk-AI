@@ -3,23 +3,13 @@ import { useAppStore } from '../../store'
 import StatusCard from '../../components/StatusCard'
 import { ProtectedRoute } from '../../components/ProtectedRoute'
 import { RefreshCw, Filter } from 'lucide-react'
+import { mediDealsService, MDUser as ServiceMDUser, MDOrder as ServiceMDOrder } from '../../services/medideals-service'
 
-interface MDUser {
-  id: string
-  name: string
-  company: string
-  role: 'retailer' | 'distributor' | 'vendor'
-  kycStatus: 'pending' | 'verified' | 'rejected'
+interface MDUser extends ServiceMDUser {
   createdAt: Date
 }
 
-interface MDOrder {
-  id: string
-  buyer: string
-  seller: string
-  items: number
-  total: number
-  status: 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled'
+interface MDOrder extends ServiceMDOrder {
   createdAt: Date
 }
 
@@ -49,57 +39,52 @@ export default function MediDealsDashboard() {
     setError(null)
 
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      // Fetch real data from MediDeals backend
+      const [userList, orderList, metricsData] = await Promise.all([
+        mediDealsService.listUsers({ limit: 100 }),
+        mediDealsService.listOrders({ limit: 100 }),
+        mediDealsService.getMetrics(),
+      ])
 
-      if (!backendStatus.connected) {
-        setUsers([])
-        setOrders([])
-        setMetrics({
-          totalUsers: 0,
-          retailers: 0,
-          distributors: 0,
-          vendors: 0,
-          kycVerified: 0,
-          totalOrders: 0,
-          revenue: 0,
-        })
-        setError('Backend unavailable - showing no data')
-      } else {
-        const mockUsers: MDUser[] = [
-          { id: '1', name: 'Sharma Pharmacy', company: 'Sharma & Co', role: 'retailer', kycStatus: 'verified', createdAt: new Date(Date.now() - 86400000) },
-          { id: '2', name: 'MediCare Distributors', company: 'MediCare Ltd', role: 'distributor', kycStatus: 'verified', createdAt: new Date(Date.now() - 172800000) },
-          { id: '3', name: 'PharmaPro Seller', company: 'PharmaPro Inc', role: 'vendor', kycStatus: 'verified', createdAt: new Date(Date.now() - 259200000) },
-          { id: '4', name: 'City Medical Store', company: 'City Medical', role: 'retailer', kycStatus: 'pending', createdAt: new Date(Date.now() - 3600000) },
-          { id: '5', name: 'Grand Pharma Supply', company: 'Grand Pharma', role: 'distributor', kycStatus: 'verified', createdAt: new Date(Date.now() - 7200000) },
-        ]
+      // Transform data to include Date objects
+      const transformedUsers: MDUser[] = userList.map(u => ({
+        ...u,
+        createdAt: new Date(u.createdAt),
+      }))
 
-        const mockOrders: MDOrder[] = [
-          { id: 'O1', buyer: 'Sharma Pharmacy', seller: 'PharmaPro Seller', items: 50, total: 45000, status: 'delivered', createdAt: new Date(Date.now() - 86400000) },
-          { id: 'O2', buyer: 'City Medical Store', seller: 'MediCare Distributors', items: 100, total: 85000, status: 'shipped', createdAt: new Date(Date.now() - 172800000) },
-          { id: 'O3', buyer: 'Sharma Pharmacy', seller: 'Grand Pharma Supply', items: 75, total: 62000, status: 'pending', createdAt: new Date(Date.now() - 3600000) },
-        ]
+      const transformedOrders: MDOrder[] = orderList.map(o => ({
+        ...o,
+        createdAt: new Date(o.createdAt),
+        estimatedDelivery: new Date(o.estimatedDelivery),
+      }))
 
-        setUsers(mockUsers)
-        setOrders(mockOrders)
+      setUsers(transformedUsers)
+      setOrders(transformedOrders)
 
-        const retailers = mockUsers.filter(u => u.role === 'retailer').length
-        const distributors = mockUsers.filter(u => u.role === 'distributor').length
-        const vendors = mockUsers.filter(u => u.role === 'vendor').length
-        const verified = mockUsers.filter(u => u.kycStatus === 'verified').length
-        const totalRevenue = mockOrders.reduce((sum, o) => sum + o.total, 0)
-
-        setMetrics({
-          totalUsers: mockUsers.length,
-          retailers,
-          distributors,
-          vendors,
-          kycVerified: verified,
-          totalOrders: mockOrders.length,
-          revenue: totalRevenue,
-        })
-      }
+      setMetrics({
+        totalUsers: metricsData.totalUsers,
+        retailers: metricsData.retailers,
+        distributors: metricsData.distributors,
+        vendors: metricsData.vendors,
+        kycVerified: metricsData.kycVerified,
+        totalOrders: metricsData.totalOrders,
+        revenue: metricsData.revenue,
+      })
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch data')
+      // Fail-closed: show error, no mock data fallback
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch data from backend'
+      setError(errorMessage)
+      setUsers([])
+      setOrders([])
+      setMetrics({
+        totalUsers: 0,
+        retailers: 0,
+        distributors: 0,
+        vendors: 0,
+        kycVerified: 0,
+        totalOrders: 0,
+        revenue: 0,
+      })
     } finally {
       setIsLoading(false)
     }

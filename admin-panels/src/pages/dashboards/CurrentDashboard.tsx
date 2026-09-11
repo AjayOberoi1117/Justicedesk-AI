@@ -3,11 +3,9 @@ import { useAppStore } from '../../store'
 import StatusCard from '../../components/StatusCard'
 import { ProtectedRoute } from '../../components/ProtectedRoute'
 import { RefreshCw } from 'lucide-react'
+import { currentService, Provider } from '../../services/current-service'
 
-interface ProviderMetrics {
-  name: string
-  status: 'healthy' | 'degraded' | 'unavailable'
-  storiesCount: number
+interface ProviderMetrics extends Provider {
   lastUpdate: Date
 }
 
@@ -31,37 +29,34 @@ export default function CurrentDashboard() {
     setError(null)
 
     try {
-      // TODO: Connect to real CURRENT backend API
-      // For now, simulate with mock data
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      // Fetch real data from CURRENT backend
+      const [providerData, metricsData] = await Promise.all([
+        currentService.listProviders(),
+        currentService.getMetrics(),
+      ])
 
-      // Simulate data based on backend health
-      if (!backendStatus.connected) {
-        setProviders([
-          { name: 'Times of India', status: 'unavailable', storiesCount: 0, lastUpdate: new Date() },
-          { name: 'The Hindu', status: 'unavailable', storiesCount: 0, lastUpdate: new Date() },
-          { name: 'Hindustan Times', status: 'unavailable', storiesCount: 0, lastUpdate: new Date() },
-        ])
-        setMetrics({
-          totalStories: 0,
-          freshStories24h: 0,
-          lastFetch: new Date(),
-        })
-        setError('Backend unavailable - showing no data')
-      } else {
-        setProviders([
-          { name: 'Times of India', status: 'healthy', storiesCount: 1247, lastUpdate: new Date(Date.now() - 300000) },
-          { name: 'The Hindu', status: 'healthy', storiesCount: 892, lastUpdate: new Date(Date.now() - 600000) },
-          { name: 'Hindustan Times', status: 'degraded', storiesCount: 456, lastUpdate: new Date(Date.now() - 1800000) },
-        ])
-        setMetrics({
-          totalStories: 2595,
-          freshStories24h: 1847,
-          lastFetch: new Date(),
-        })
-      }
+      // Transform provider data to include Date object
+      const transformedProviders: ProviderMetrics[] = providerData.map(p => ({
+        ...p,
+        lastUpdate: new Date(p.lastUpdate),
+      }))
+
+      setProviders(transformedProviders)
+      setMetrics({
+        totalStories: metricsData.totalStories,
+        freshStories24h: metricsData.freshStories24h,
+        lastFetch: new Date(metricsData.lastFetch),
+      })
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch data')
+      // Fail-closed: show error, no mock data fallback
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch data from backend'
+      setError(errorMessage)
+      setProviders([])
+      setMetrics({
+        totalStories: 0,
+        freshStories24h: 0,
+        lastFetch: new Date(),
+      })
     } finally {
       setIsLoading(false)
     }
